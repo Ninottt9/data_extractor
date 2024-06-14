@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import re
 import os
 import argparse
+from Face_Detect.detect_face import detect_faces
 
 # Load and preprocess the image
 def preprocess_image(image_path):
@@ -60,6 +61,7 @@ def process_documents_in_folder(folder_path, output_folder):
     for filename in os.listdir(folder_path):
         if filename.lower().startswith('document') and filename.endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
             image_path = os.path.join(folder_path, filename)
+            detect_faces(image_path, output_folder, display=False)
             preprocessed_image = preprocess_image(image_path)
             ocr_output = ocr_process(preprocessed_image)
             cleaned_text = clean_ocr_text(ocr_output)
