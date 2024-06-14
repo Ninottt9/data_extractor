@@ -3,6 +3,7 @@ import pytesseract
 import matplotlib.pyplot as plt
 import re
 import os
+import argparse
 
 # Load and preprocess the image
 def preprocess_image(image_path):
@@ -75,8 +76,15 @@ def save_results_to_file(fields, output_folder, document_name):
     with open(output_path, 'w') as f:
         for key, value in fields.items():
             f.write(f"{key}: {value}\n")
+            
+def main():
+    parser = argparse.ArgumentParser(description="Process OCR on document images.")
+    parser.add_argument('-i', '--input_folder', required=True, help="Path to the input folder containing images.")
+    parser.add_argument('-o', '--output_folder', required=True, help="Path to the output folder to save results.")
+    args = parser.parse_args()
+
+    process_documents_in_folder(args.input_folder, args.output_folder)
+
 
 if __name__ == '__main__':
-    folder_path = r'D:/Uczenie/AGH/2_STOPIEN/SEM_1/AIPO/projekt/data_extractor/generated/'
-    output_folder = 'extracted'
-    document_fields = process_documents_in_folder(folder_path, output_folder)
+    main()
