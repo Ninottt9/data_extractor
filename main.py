@@ -36,12 +36,12 @@ def extract_fields(text):
     
     patterns = {
         'SURNAME': r'SURNAME\s*([A-Z]+)',
-        'GIVEN NAMES': r'GIVEN NAMES\s*([A-Z]+)',
+        'GIVEN_NAMES': r'GIVEN NAMES\s*([A-Z]+)',
         'NATIONALITY': r'.*(POLSKIE)',
-        'DATE OF BIRTH': r'DATE OF BIRTH\s*|POLSKIE\s*(\d{1,2}\.\d{1,2}\.\d{4})',
-        'IDENTITY CARD NUMBER': r'CARD NUMBER\s*([A-Z]{3}\s\d{6})',
-        'SEX': r'.*(\s+[KM]\s+)',
-        'EXPIRY DATE': r'EXPIRY DATE\s*(\d{1,2}\.\d{1,2}\.\d{4})'
+        'DATE_OF_BIRTH': r'DATE OF BIRTH\s*|POLSKIE\s*(\d{1,2}\.\d{1,2}\.\d{4})',
+        'IDENTITY_CARD_NUMBER': r'CARD NUMBER\s*([A-Z]{3}\s\d{6})',
+        'SEX': r'.*\s+([KM]{1})\s+',
+        'EXPIRY_DATE': r'EXPIRY DATE\s*(\d{1,2}\.\d{1,2}\.\d{4})'
     }
     
     for field, pattern in patterns.items():
@@ -77,7 +77,7 @@ def save_results_to_file(fields, output_folder, document_name):
     output_path = os.path.join(output_folder, f"{document_name}.txt")
     with open(output_path, 'w') as f:
         for key, value in fields.items():
-            f.write(f"{key}: {value}\n")
+            f.write(f"{key}={value}\n")
             
 def main():
     parser = argparse.ArgumentParser(description="Process OCR on document images.")
