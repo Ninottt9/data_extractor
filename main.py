@@ -2,6 +2,7 @@ import cv2
 import pytesseract
 import matplotlib.pyplot as plt
 import re
+import os
 
 # Load and preprocess the image
 def preprocess_image(image_path):
@@ -14,7 +15,6 @@ def preprocess_image(image_path):
 # OCR processing function
 def ocr_process(image):
     # custom_config = r'--oem 3 --psm 6'
-    # custom_config = r'--oem 3 --psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789./'
     custom_config = ''
     text = pytesseract.image_to_string(image, config=custom_config, lang='eng+pol')
     return text
@@ -24,6 +24,8 @@ def clean_ocr_text(text):
     text = re.sub(r'[~:"]', '', text)
     text = re.sub(r'\s+', ' ', text)  # Remove excessive whitespace
     text = re.sub(r'[^a-zA-Z0-9\s./]', '', text)  # Remove unwanted characters
+    text = re.sub(r':', '', text) # remove colons
+    text = re.sub(r'([a-zA-Z])\.', r'\1', text) # remove dots after letters
     return text
 
 # Function to extract key fields from the text
@@ -31,13 +33,13 @@ def extract_fields(text):
     fields = {}
     
     patterns = {
-        'SURNAME': r'Nazwisko / SURNAME\s*(\w+)',
-        'GIVEN NAMES': r'IMIONA / GIVEN NAMES\s*(\w+)',
-        'NATIONALITY': r'OBYWATELSTWO / NATIONALITY\s*(\w+)',
-        'DATE OF BIRTH': r'DATA URODZENIA / DATE OF BIRTH\s*(\d{1,2}\.\d{1,2}\.\d{4})',
-        'IDENTITY CARD NUMBER': r'NUMER DOWODU OSOBISTEGO/ IDENTITY CARD NUMBER\s*(\w+)',
-        'SEX': r'PŁEĆ / SEX\s*([MF])',
-        'EXPIRY DATE': r'TERMIN WAŻNOŚCI / EXPIRY DATE\s*(\d{1,2}\.\d{1,2}\.\d{4})'
+        'SURNAME': r'SURNAME\s*([A-Z]+)',
+        'GIVEN NAMES': r'GIVEN NAMES\s*([A-Z]+)',
+        'NATIONALITY': r'.*(POLSKIE)',
+        'DATE OF BIRTH': r'DATE OF BIRTH\s*|POLSKIE\s*(\d{1,2}\.\d{1,2}\.\d{4})',
+        'IDENTITY CARD NUMBER': r'CARD NUMBER\s*([A-Z]{3}\s\d{6})',
+        'SEX': r'.*(\s+[KM]\s+)',
+        'EXPIRY DATE': r'EXPIRY DATE\s*(\d{1,2}\.\d{1,2}\.\d{4})'
     }
     
     for field, pattern in patterns.items():
@@ -47,43 +49,34 @@ def extract_fields(text):
     
     return fields
 
-# Generic function to process multiple documents
-def process_documents(image_paths):
+# Function to process all images in a given folder and save results
+def process_documents_in_folder(folder_path, output_folder):
     results = []
-    for path in image_paths:
-        preprocessed_image = preprocess_image(path)
-        ocr_output = ocr_process(preprocessed_image)
-        cleaned_text = clean_ocr_text(ocr_output)
-        fields = extract_fields(cleaned_text)
-        results.append(fields)
+    # Ensure output folder exists
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    # List all files in the folder
+    for filename in os.listdir(folder_path):
+        if filename.lower().startswith('document') and filename.endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
+            image_path = os.path.join(folder_path, filename)
+            preprocessed_image = preprocess_image(image_path)
+            ocr_output = ocr_process(preprocessed_image)
+            cleaned_text = clean_ocr_text(ocr_output)
+            # spell_checked_text = spell_check(cleaned_text)
+            fields = extract_fields(cleaned_text)
+            document_name = os.path.splitext(filename)[0]
+            save_results_to_file(fields, output_folder, document_name)
+            results.append(fields)
     return results
 
+# Function to save extracted fields to a text file
+def save_results_to_file(fields, output_folder, document_name):
+    output_path = os.path.join(output_folder, f"{document_name}.txt")
+    with open(output_path, 'w') as f:
+        for key, value in fields.items():
+            f.write(f"{key}: {value}\n")
+
 if __name__ == '__main__':
-    # Load and preprocess the image
-    image_path = r'D:/Uczenie\AGH/2_STOPIEN/SEM_1/AIPO/projekt/documents_processor/generated/document_15.png'
-    processed_image = preprocess_image(image_path)
-
-    # Perform OCR on the preprocessed image
-    ocr_text = ocr_process(processed_image)
-    print('ocr_text')
-    print(ocr_text)
-
-    # Clean and standardize the OCR output
-    cleaned_text = clean_ocr_text(ocr_text)
-    print('cleaned_text')
-    print(cleaned_text)
-
-    # Extract key fields from the cleaned text
-    fields = extract_fields(cleaned_text)
-    print('extracted fields')
-    # Display the extracted fields
-    for key, value in fields.items():
-        print(f"{key}: {value}")
-
-    # Example of processing multiple documents
-    # image_paths = ['path_to_your_image1.png', 'path_to_your_image2.png']
-    # document_fields = process_documents(image_paths)
-    # for fields in document_fields:
-    #   for key, value in fields.items():
-    #     print(f"{key}: {value}")
-    #   print("---")
+    folder_path = r'D:/Uczenie/AGH/2_STOPIEN/SEM_1/AIPO/projekt/data_extractor/generated/'
+    output_folder = 'extracted'
+    document_fields = process_documents_in_folder(folder_path, output_folder)
