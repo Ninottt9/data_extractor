@@ -28,6 +28,9 @@ def clean_ocr_text(text):
     text = re.sub(r'[^a-zA-Z0-9\s./]', '', text)  # Remove unwanted characters
     text = re.sub(r':', '', text) # remove colons
     text = re.sub(r'([a-zA-Z])\.', r'\1', text) # remove dots after letters
+    text = re.sub(r'\s+(\.+)\s+', ' ', text) # remove single dots
+    text = re.sub(r'/', '', text) # clean slashes
+    text = re.sub(r'\s+[a-z]{1,2}\s+', ' ', text) # clean single or double letters
     return text
 
 # Function to extract key fields from the text
@@ -35,8 +38,8 @@ def extract_fields(text):
     fields = {}
     
     patterns = {
-        'SURNAME': r'SURNAME\s*([A-Z]+)',
-        'GIVEN_NAMES': r'GIVEN NAMES\s*([A-Z]+)',
+        'SURNAME': r'SURNAME\s*\w{1}?\s*([A-Z]{2,})',
+        'GIVEN_NAMES': r'GIVEN \b\w+\b\s*([A-Z]+)',
         'NATIONALITY': r'.*(POLSKIE)',
         'DATE_OF_BIRTH': r'DATE OF BIRTH\s*|POLSKIE\s*(\d{1,2}\.\d{1,2}\.\d{4})',
         'IDENTITY_CARD_NUMBER': r'CARD NUMBER\s*([A-Z]{3}\s\d{6})',
@@ -45,7 +48,7 @@ def extract_fields(text):
     }
     
     for field, pattern in patterns.items():
-        match = re.search(pattern, text, re.IGNORECASE)
+        match = re.search(pattern, text)
         if match:
             fields[field] = match.group(1)
     
@@ -68,9 +71,15 @@ def process_documents_in_folder(folder_path, output_folder):
             # spell_checked_text = spell_check(cleaned_text)
             fields = extract_fields(cleaned_text)
             document_name = os.path.splitext(filename)[0]
+            # save_cleaned_text_to_file(cleaned_text, output_folder, document_name) debug purposes
             save_results_to_file(fields, output_folder, document_name)
             results.append(fields)
     return results
+
+def save_cleaned_text_to_file(text, output_folder, document_name):
+    output_path = os.path.join(output_folder, f"{document_name}_cleaned_text.txt")
+    with open(output_path, 'w') as f:
+        f.write(text)
 
 # Function to save extracted fields to a text file
 def save_results_to_file(fields, output_folder, document_name):
