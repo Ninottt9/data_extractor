@@ -16,4 +16,5 @@ For 30 images, it takes approximately 1 minute to for the program to run.
 
 ## installation
 - install pytesseract: https://pypi.org/project/pytesseract/
+- install polish and englisgh language packs for tessaract: https://ocrmypdf.readthedocs.io/en/latest/languages.html
 - ```pip install -r requirements.txt```
