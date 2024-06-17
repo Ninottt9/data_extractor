@@ -10,6 +10,20 @@ The image is the extracted face, and the text file contains the extracted data i
 
 For 30 images, it takes approximately 1 minute to for the program to run.
 
+## Output
+The output is stored in the output folder in the format: document_name_extracted_img.jpg, document_name.txt.
+The image is the extracted face, and the text file contains the extracted data in ```key=value``` format.
+The data key values are:
+- SURNAME
+- NAME
+- NATIONALITY
+- DATE_OF_BIRTH
+- IDENTITY_CARD_NUMBER
+- SEX
+- EXPIRY_DATE
+
+The data may be incomplete or incorrect.
+
 ## Requirements
 - python 3.6+
 - tessaract
