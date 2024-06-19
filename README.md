@@ -14,15 +14,28 @@ For 30 images, it takes approximately 1 minute to for the program to run.
 The output is stored in the output folder in the format: document_name_extracted_img.jpg, document_name.txt.
 The image is the extracted face, and the text file contains the extracted data in ```key=value``` format.
 The data key values are:
+For the ID card:
 - SURNAME
-- NAME
+- GIVEN_NAMES
 - NATIONALITY
 - DATE_OF_BIRTH
 - IDENTITY_CARD_NUMBER
 - SEX
 - EXPIRY_DATE
+- DOCUMENT_TYPE=NATIONAL_ID (this field is always present)
+
+For the Passport:
+- SURNAME
+- GIVEN_NAMES
+- COUNTRY
+- DATE_OF_BIRTH
+- SEX
+- DATE_OF_ISSUE
+- EXPIRY_DATE
+- DOCUMENT_TYPE=PASSPORT (this field is always present)
 
 The data may be incomplete or incorrect.
+If the document type is not recognized, no data will be extracted and the image will appear on the console: ```Document type not recognized for <document_name>```.
 
 ## Requirements
 - python 3.6+
